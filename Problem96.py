@@ -17,7 +17,38 @@ def main():
 		printGrid(gridGen(sudokuDic[key]))
 		print()
 		printGrid(solve(gridGen(sudokuDic[key])))
-	
+
+def eliminateColumn(grid):
+	for j in range(9):
+		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
+		for i in range(9):
+			if len(grid[i][j]) > 1:
+				for dig in grid[i][j]:
+					tempDic[dig] += 1
+#		print(tempDic)
+		for key, v in tempDic.items():
+			if v == 1:
+				for k in range(9):
+					if key in grid[j][j]:
+						grid[k][j] = [key]
+						return solve(grid)
+	return grid
+
+def eliminateRow(grid):
+	for i in range(9):
+		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
+		for j in range(9):
+			if len(grid[i][j]) > 1:
+				for dig in grid[i][j]:
+					tempDic[dig] += 1
+#		print(tempDic)
+		for key, v in tempDic.items():
+			if v == 1:
+				for k in range(9):
+					if key in grid[i][k]:
+						grid[i][k] = [key]
+						return solve(grid)
+	return grid
 
 def eliminateBlock(grid):
 	blocks = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -52,7 +83,8 @@ def solve(grid):					# get all options for all numbers in each cell, recursive u
 		return grid
 	else:
 		grid = eliminateBlock(grid)
-	
+		grid = eliminateRow(grid)
+		grid = eliminateColumn(grid)
 	return grid
 	
 def resolve(num, i, j, grid):			# if num at i, j matches anything in the rows, columns or blocks then return True, there is a match, remove it from list of options
