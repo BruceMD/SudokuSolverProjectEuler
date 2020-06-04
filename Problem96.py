@@ -1,5 +1,8 @@
 import random
 
+randomCheck = True				# global variable for randomGuess() if True, first time performing random go
+randomSkip = []					# list of i, j indices that didn't work on the first time
+randomBackUp = []				# global backUp for randomGuess()
 
 def main():
 	sudokuDic = {}
@@ -18,6 +21,26 @@ def main():
 		print()
 		printGrid(solve(gridGen(sudokuDic[key])))
 
+	
+def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
+	for i in range(9):
+		for j in range(9):
+			if len(grid[i][j]) > 1:
+				for num in grid[i][j]:
+					if resolve(num, i, j, grid):
+						grid[i][j].remove(num)
+						return solve(grid)
+	if completeCheck(grid):
+		return grid
+	else:
+		grid = eliminateBlock(grid)
+		grid = eliminateRow(grid)
+		grid = eliminateColumn(grid)
+		if completeCheck(grid) == False and randomCheck:
+#			printGridFull(grid)
+			randomGuess(grid)
+	return grid
+	
 def eliminateColumn(grid):
 	for j in range(9):
 		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
@@ -70,26 +93,39 @@ def eliminateBlock(grid):
 								grid[i][j] = [key]
 								return solve(grid)
 	return grid
+
+def randomGuess(grid):			# nudge approach
+	global randomBackUp			# lis[lis[]]
+	global randomCheck			# boolean
 	
-def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
+	randomCheck = False
+	print("We are GUESSING!!!!!!!!!!!!!!!!!!!!!")
+	
+	randomBackUp = grid
+	tempInd = []
+	
 	for i in range(9):
 		for j in range(9):
-			if len(grid[i][j]) > 1:
-				for num in grid[i][j]:
-					if resolve(num, i, j, grid):
-						grid[i][j].remove(num)
-						return solve(grid)
-	if completeCheck(grid):
-		return grid
-	else:
-		grid = eliminateBlock(grid)
-		grid = eliminateRow(grid)
-		grid = eliminateColumn(grid)
-		if completeCheck(grid) == False:
-			printGridFull(grid)
-			#randomGuess(grid)
-	return grid
+			if len(grid[i][j]) == 2:
+				tempInd = grid[i][j]
+				for k in range(2):
+					grid[i][j] = [tempInd[k]]
+					print(tempInd[k], i, j)
+					if completeCheck(solve(grid)) and validate(solve(grid)):
+						return
 	
+	return grid
+
+def validate(grid):
+	for i in range(9):
+		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
+		for j in range(9):
+			tempDic[grid[i][j][0]] += 1
+		for v in tempDic.values():
+			if v != 1:
+				return False
+	return True
+
 def resolve(num, i, j, grid):			# if num at i, j matches anything in the rows, columns or blocks then return True, there is a match, remove it from list of options
 	for k in range(9):
 		if [num] == grid[k][j] or [num] == grid[i][k]:
