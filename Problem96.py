@@ -19,6 +19,26 @@ def main():
 		printGrid(solve(gridGen(sudokuDic[key])))
 	
 
+def eliminateBlock(grid):
+	blocks = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+	for blocX in blocks:
+		for blocY in blocks:					# cycle through each 3 by 3 grid
+#			print(blocX, blocY)
+			tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
+			for i in blocX:
+				for j in blocY:					# make a list of all the contents I suppose
+					if len(grid[i][j]) > 1:
+						for dig in grid[i][j]:
+							tempDic[dig] += 1
+#			print(tempDic)
+			for key, v in tempDic.items():
+				if v == 1:
+					for i in blocX:
+						for j in blocY:
+							if key in grid[i][j]:
+								grid[i][j] = [key]
+								return solve(grid)
+	return grid
 	
 def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
 	for i in range(9):
@@ -28,6 +48,11 @@ def solve(grid):					# get all options for all numbers in each cell, recursive u
 					if resolve(num, i, j, grid):
 						grid[i][j].remove(num)
 						return solve(grid)
+	if completeCheck(grid):
+		return grid
+	else:
+		grid = eliminateBlock(grid)
+	
 	return grid
 	
 def resolve(num, i, j, grid):			# if num at i, j matches anything in the rows, columns or blocks then return True, there is a match, remove it from list of options
