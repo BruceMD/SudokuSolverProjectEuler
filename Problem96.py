@@ -85,6 +85,9 @@ def solve(grid):					# get all options for all numbers in each cell, recursive u
 		grid = eliminateBlock(grid)
 		grid = eliminateRow(grid)
 		grid = eliminateColumn(grid)
+		if completeCheck(grid) == False:
+			printGridFull(grid)
+			#randomGuess(grid)
 	return grid
 	
 def resolve(num, i, j, grid):			# if num at i, j matches anything in the rows, columns or blocks then return True, there is a match, remove it from list of options
