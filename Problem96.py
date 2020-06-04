@@ -1,4 +1,5 @@
 import random
+from itertools import permutations
 
 randomCheck = True				# global variable for randomGuess() if True, first time performing random go
 randomSkip = []					# list of i, j indices that didn't work on the first time
@@ -14,12 +15,13 @@ def main():
 				sudokuDic[tempKey] = []
 			else:
 				sudokuDic[tempKey] += convert(line.strip("\n"))
-	
+				
+
 	for key in sudokuDic.keys():
 		print(key)
-		printGrid(gridGen(sudokuDic[key]))
-		print()
+#		printGrid(gridGen(sudokuDic[key]))
 		printGrid(solve(gridGen(sudokuDic[key])))
+		print()
 
 	
 def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
@@ -37,8 +39,9 @@ def solve(grid):					# get all options for all numbers in each cell, recursive u
 		grid = eliminateRow(grid)
 		grid = eliminateColumn(grid)
 		if completeCheck(grid) == False and randomCheck:
-#			printGridFull(grid)
+			printGridFull(grid)
 			randomGuess(grid)
+#	printGridFull(grid)
 	return grid
 	
 def eliminateColumn(grid):
@@ -94,32 +97,58 @@ def eliminateBlock(grid):
 								return solve(grid)
 	return grid
 
-def randomGuess(grid):			# nudge approach
+def randomGuess(grid):			# [0, 0, 0, 1, 1, 1]
 	global randomBackUp			# lis[lis[]]
-	global randomCheck			# boolean
-	
-	randomCheck = False
+	global randomCheck
 	print("We are GUESSING!!!!!!!!!!!!!!!!!!!!!")
 	
+	randomCheck = False
 	randomBackUp = grid
 	tempInd = []
 	
 	for i in range(9):
+		if len(tempInd) == 3:
+			break
 		for j in range(9):
+			if len(tempInd) == 3:
+				break
 			if len(grid[i][j]) == 2:
-				tempInd = grid[i][j]
-				for k in range(2):
-					grid[i][j] = [tempInd[k]]
-					print(tempInd[k], i, j)
-					if completeCheck(solve(grid)) and validate(solve(grid)):
-						return
+				tempInd.append([i, j])
 	
-	return grid
+	print(tempInd)
+	oneZeroInd = oneZero(len(tempInd))
+	for oz in oneZeroInd:
+		for ind in range(len(tempInd)):
+			print("The random backUp is: ", randomBackUp[3][7])
+			grid[tempInd[ind][0]][tempInd[ind][1]] = [randomBackUp[tempInd[ind][0]][tempInd[ind][1]][oz[ind]]]
+			print(grid[tempInd[ind][0]][tempInd[ind][1]])
+			if completeCheck(solve(grid)):
+				if validate(solve(grid)):
+					return solve(grid)
+				else:
+					print("NOT VALID")
+			else:
+				print("NOT COMPLETE")
+	return solve(grid)
+	
+def oneZero(n):
+	options = [0, 1]*n
+	mySet = set()
+	for perm in permutations(options, n):
+		mySet.add(perm)
+	return mySet
 
 def validate(grid):
 	for i in range(9):
 		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
 		for j in range(9):
+			tempDic[grid[i][j][0]] += 1
+		for v in tempDic.values():
+			if v != 1:
+				return False
+	for j in range(9):
+		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
+		for i in range(9):
 			tempDic[grid[i][j][0]] += 1
 		for v in tempDic.values():
 			if v != 1:
