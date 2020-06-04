@@ -12,7 +12,16 @@ def main():
 			else:
 				sudokuDic[tempKey] += convert(line.strip("\n"))
 	
-	print(gridGen(sudokuDic["Grid 01"]))
+	printGrid(gridGen(sudokuDic["Grid 01"]))
+
+def printGrid(grid):
+	for line in grid:
+		for num in line:
+			if len(num) > 1:
+				print("_", end="|")
+			else:
+				print(num[0], end="|")
+		print("")
 
 def gridGen(numLis):
 	grid = []
