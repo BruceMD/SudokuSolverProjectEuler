@@ -16,13 +16,18 @@ def main():
 			else:
 				sudokuDic[tempKey] += convert(line.strip("\n"))
 				
-
+	value = 0
 	for key in sudokuDic.keys():
 		print(key)
 #		printGrid(gridGen(sudokuDic[key]))
-		printGrid(solve(gridGen(sudokuDic[key])))
+		puzzle = solve(gridGen(sudokuDic[key]))
+		printGrid(puzzle)
+		print(validate(puzzle))
+		if validate(puzzle):
+			value += 1
 		print()
 
+	print(value)
 	
 def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
 	for i in range(9):
@@ -104,31 +109,33 @@ def randomGuess(grid):			# [0, 0, 0, 1, 1, 1]
 	
 	randomCheck = False
 	randomBackUp = grid
-	tempInd = []
+	tempInd = {}
 	
-	for i in range(9):
+	for i in range(9):				# generate a dictionary of max 3 indices and their accompanying cell options
 		if len(tempInd) == 3:
 			break
 		for j in range(9):
 			if len(tempInd) == 3:
 				break
 			if len(grid[i][j]) == 2:
-				tempInd.append([i, j])
+				tempInd[i, j] = grid[i][j]
 	
 	print(tempInd)
-	oneZeroInd = oneZero(len(tempInd))
-	for oz in oneZeroInd:
-		for ind in range(len(tempInd)):
-			print("The random backUp is: ", randomBackUp[3][7])
-			grid[tempInd[ind][0]][tempInd[ind][1]] = [randomBackUp[tempInd[ind][0]][tempInd[ind][1]][oz[ind]]]
-			print(grid[tempInd[ind][0]][tempInd[ind][1]])
+	oneZeroInd = oneZero(len(tempInd))		# generate all permuations of 0 and 1 for twice length of dictionary
+	
+	for ozAlternates in oneZeroInd:
+		for num, key in enumerate(tempInd):
+			grid[key[0]][key[1]] = [tempInd[key][ozAlternates[num]]]
+			print(grid[key[0]][key[1]])
 			if completeCheck(solve(grid)):
 				if validate(solve(grid)):
 					return solve(grid)
 				else:
-					print("NOT VALID")
+					print("Not valid")
 			else:
-				print("NOT COMPLETE")
+				print("Not complete")
+	
+	
 	return solve(grid)
 	
 def oneZero(n):
