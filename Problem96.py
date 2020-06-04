@@ -12,14 +12,15 @@ def main():
 			else:
 				sudokuDic[tempKey] += convert(line.strip("\n"))
 	
+	for key in sudokuDic.keys():
+		print(key)
+		printGrid(gridGen(sudokuDic[key]))
+		print()
+		printGrid(solve(gridGen(sudokuDic[key])))
 	
-	printGrid(gridGen(sudokuDic["Grid 01"]))
-	print()
-	printGrid(solve(gridGen(sudokuDic["Grid 01"])))
+
 	
-def solve(grid):					# get all options for all numbers in each cell
-#	printGridFull(grid)
-#	print()
+def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
 	for i in range(9):
 		for j in range(9):
 			if len(grid[i][j]) > 1:
@@ -27,7 +28,6 @@ def solve(grid):					# get all options for all numbers in each cell
 					if resolve(num, i, j, grid):
 						grid[i][j].remove(num)
 						return solve(grid)
-	
 	return grid
 	
 def resolve(num, i, j, grid):			# if num at i, j matches anything in the rows, columns or blocks then return True, there is a match, remove it from list of options
@@ -47,6 +47,16 @@ def block(num):
 		return [3, 4, 5]
 	else:
 		return [6, 7, 8]
+
+def completeCheck(grid):		# return false if we are not finished
+	count = 0
+	for i in range(9):
+		for j in range(9):
+			if len(grid[i][j]) == 1:
+				count += 1
+			elif len(grid[i][j]) > 1:
+				return False
+	return (count == 81)
 
 def printGrid(grid):
 	for line in grid:
