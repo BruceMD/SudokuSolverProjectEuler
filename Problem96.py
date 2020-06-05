@@ -1,11 +1,14 @@
 import random
 from itertools import permutations
+import time
 
 randomCheck = True				# global variable for randomGuess() if True, first time performing random go
 randomSkip = []					# list of i, j indices that didn't work on the first time
 randomBackUp = []				# global backUp for randomGuess()
 
 def main():
+	global randomCheck
+	
 	sudokuDic = {}
 	tempKey = ""
 	with open('C:\\Users\\ASUS\\Desktop\\ProjectEuler\\p096_sudoku.txt', 'r') as file:
@@ -17,17 +20,23 @@ def main():
 				sudokuDic[tempKey] += convert(line.strip("\n"))
 				
 	value = 0
+	sumList = []
 	for key in sudokuDic.keys():
 		print(key)
 #		printGrid(gridGen(sudokuDic[key]))
 		puzzle = solve(gridGen(sudokuDic[key]))
+		randomCheck = True
 		printGrid(puzzle)
+		sumList.append(puzzle[0][0])
+		sumList.append(puzzle[0][1])
+		sumList.append(puzzle[0][2])
 		print(validate(puzzle))
 		if validate(puzzle):
 			value += 1
 		print()
 
 	print(value)
+	print(sumList)
 	
 def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
 	for i in range(9):
@@ -37,7 +46,7 @@ def solve(grid):					# get all options for all numbers in each cell, recursive u
 					if resolve(num, i, j, grid):
 						grid[i][j].remove(num)
 						return solve(grid)
-	if completeCheck(grid):
+	if completeCheck(grid) and validate(grid):
 		return grid
 	else:
 		grid = eliminateBlock(grid)
@@ -112,28 +121,28 @@ def randomGuess(grid):			# [0, 0, 0, 1, 1, 1]
 	tempInd = {}
 	
 	for i in range(9):				# generate a dictionary of max 3 indices and their accompanying cell options
-		if len(tempInd) == 3:
-			break
+#		if len(tempInd) == 5:
+#			break
 		for j in range(9):
-			if len(tempInd) == 3:
-				break
+#			if len(tempInd) == 5:
+#				break
 			if len(grid[i][j]) == 2:
 				tempInd[i, j] = grid[i][j]
 	
-	print(tempInd)
+#	print(tempInd)
 	oneZeroInd = oneZero(len(tempInd))		# generate all permuations of 0 and 1 for twice length of dictionary
 	
 	for ozAlternates in oneZeroInd:
 		for num, key in enumerate(tempInd):
 			grid[key[0]][key[1]] = [tempInd[key][ozAlternates[num]]]
-			print(grid[key[0]][key[1]])
-			if completeCheck(solve(grid)):
-				if validate(solve(grid)):
-					return solve(grid)
-				else:
-					print("Not valid")
+#			print(grid[key[0]][key[1]])
+		if completeCheck(solve(grid)):
+			if validate(solve(grid)):
+				return solve(grid)
 			else:
-				print("Not complete")
+				print("Not valid")
+		else:
+			print("Not complete")
 	
 	
 	return solve(grid)
@@ -230,4 +239,7 @@ def convert(name):
 
 
 if __name__ == '__main__':
+	s = time.time()
 	main()
+	e = time.time()
+	print(e-s)
