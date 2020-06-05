@@ -1,13 +1,7 @@
-import random
-from itertools import permutations
 import time
 
-randomCheck = True				# global variable for randomGuess() if True, first time performing random go
-randomSkip = []					# list of i, j indices that didn't work on the first time
-randomBackUp = []				# global backUp for randomGuess()
 
 def main():
-	global randomCheck
 	
 	sudokuDic = {}
 	tempKey = ""
@@ -25,7 +19,6 @@ def main():
 		print(key)
 #		printGrid(gridGen(sudokuDic[key]))
 		puzzle = solve(gridGen(sudokuDic[key]))
-		randomCheck = True
 		printGrid(puzzle)
 		sumList.append(puzzle[0][0])
 		sumList.append(puzzle[0][1])
@@ -39,6 +32,7 @@ def main():
 	print(sumList)
 	
 def solve(grid):					# get all options for all numbers in each cell, recursive until it can't do anymore
+
 	for i in range(9):
 		for j in range(9):
 			if len(grid[i][j]) > 1:
@@ -46,18 +40,60 @@ def solve(grid):					# get all options for all numbers in each cell, recursive u
 					if resolve(num, i, j, grid):
 						grid[i][j].remove(num)
 						return solve(grid)
-	if completeCheck(grid) and validate(grid):
+						
+	if completeCheck(grid):
 		return grid
 	else:
 		grid = eliminateBlock(grid)
-		grid = eliminateRow(grid)
-		grid = eliminateColumn(grid)
-		if completeCheck(grid) == False and randomCheck:
+		if completeCheck(grid):
+			return grid
+		else:
 			printGridFull(grid)
-			randomGuess(grid)
-#	printGridFull(grid)
+			options = []
+			for i in range(9):
+				for j in range(9):
+					options.append([i, j])
+			grid = bruteForce(grid, grid, options, 0)				# in theory, if nothing has screwed up earlier, bruteForce() should recursively go through all the final possibilities until it finds the solution to the sudoku puzzle
 	return grid
+
+def bruteForce(originalGrid, grid, options, n):
+	print("We are at : ",n, " level")
+	if completeCheck(grid):
+		return grid
+
+	for cellNum in originalGrid[options[n][0]][options[n][1]]:
+		grid[options[n][0]][options[n][1]] = [cellNum]
+		print("Testing")
+		printGrid(grid)
+		print(invalidate(grid))
+		if not invalidate(grid): 		# if we fail to invalidate this guess, continue
+			grid = bruteForce(originalGrid, grid, options, n+1)
 	
+	if completeCheck(grid):
+		return grid
+	else:
+		print("WE FAILED")
+		
+	
+def invalidate(grid):
+	for i in range(9):
+		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
+		for j in range(9):
+			if len(grid[i][j]) == 1:
+				tempDic[grid[i][j][0]] += 1
+		for v in tempDic.values():
+			if v > 1:
+				return False
+	for j in range(9):
+		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
+		for i in range(9):
+			if len(grid[i][j]) == 1:
+				tempDic[grid[i][j][0]] += 1
+		for v in tempDic.values():
+			if v > 1:
+				return False
+	return True
+
 def eliminateColumn(grid):
 	for j in range(9):
 		tempDic = {1:0, 2:0, 3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0}
@@ -88,7 +124,7 @@ def eliminateRow(grid):
 					if key in grid[i][k]:
 						grid[i][k] = [key]
 						return solve(grid)
-	return grid
+	return eliminateColumn(grid)
 
 def eliminateBlock(grid):
 	blocks = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -109,50 +145,7 @@ def eliminateBlock(grid):
 							if key in grid[i][j]:
 								grid[i][j] = [key]
 								return solve(grid)
-	return grid
-
-def randomGuess(grid):			# [0, 0, 0, 1, 1, 1]
-	global randomBackUp			# lis[lis[]]
-	global randomCheck
-	print("We are GUESSING!!!!!!!!!!!!!!!!!!!!!")
-	
-	randomCheck = False
-	randomBackUp = grid
-	tempInd = {}
-	
-	for i in range(9):				# generate a dictionary of max 3 indices and their accompanying cell options
-#		if len(tempInd) == 5:
-#			break
-		for j in range(9):
-#			if len(tempInd) == 5:
-#				break
-			if len(grid[i][j]) == 2:
-				tempInd[i, j] = grid[i][j]
-	
-#	print(tempInd)
-	oneZeroInd = oneZero(len(tempInd))		# generate all permuations of 0 and 1 for twice length of dictionary
-	
-	for ozAlternates in oneZeroInd:
-		for num, key in enumerate(tempInd):
-			grid[key[0]][key[1]] = [tempInd[key][ozAlternates[num]]]
-#			print(grid[key[0]][key[1]])
-		if completeCheck(solve(grid)):
-			if validate(solve(grid)):
-				return solve(grid)
-			else:
-				print("Not valid")
-		else:
-			print("Not complete")
-	
-	
-	return solve(grid)
-	
-def oneZero(n):
-	options = [0, 1]*n
-	mySet = set()
-	for perm in permutations(options, n):
-		mySet.add(perm)
-	return mySet
+	return eliminateRow(grid)
 
 def validate(grid):
 	for i in range(9):
