@@ -57,22 +57,31 @@ def solve(grid):					# get all options for all numbers in each cell, recursive u
 	return grid
 
 def bruteForce(originalGrid, grid, options, n):
-	print("We are at : ",n, " level")
+	print("We are at level:",n)
 	if completeCheck(grid):
 		return grid
-
-	for cellNum in originalGrid[options[n][0]][options[n][1]]:
-		grid[options[n][0]][options[n][1]] = [cellNum]
-		print("Testing")
-		printGrid(grid)
-		print(invalidate(grid))
-		if not invalidate(grid): 		# if we fail to invalidate this guess, continue
-			grid = bruteForce(originalGrid, grid, options, n+1)
 	
+	print(originalGrid[options[n][0]][options[n][1]])
+	
+	if len(originalGrid[options[n][0]][options[n][1]]) == 1:
+		bruteForce(originalGrid, grid, options, n+1)
+	else:
+		for cellNum in originalGrid[options[n][0]][options[n][1]]:
+			print(cellNum)
+			bruteForce(originalGrid, grid, options, n+1)
+		
+			grid[options[n][0]][options[n][1]] = [cellNum]
+			print("Testing")
+			printGrid(grid)
+			print("invalidate() is returning: ", invalidate(grid))
+			if invalidate(grid): 		# if we fail to invalidate this guess, continue
+				bruteForce(originalGrid, grid, options, n+1)
+
 	if completeCheck(grid):
 		return grid
 	else:
-		print("WE FAILED")
+		return False
+	
 		
 	
 def invalidate(grid):
